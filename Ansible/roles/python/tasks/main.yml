@@ -1,0 +1,84 @@
+- name: Update apt package cache
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: Upgrade all packages
+  ansible.builtin.apt:
+    upgrade: yes
+
+
+- name: Install dependencies
+  ansible.builtin.apt:
+    name:
+      - libssl-dev 
+      - zlib1g-dev 
+      - libbz2-dev 
+      - libreadline-dev 
+      - libsqlite3-dev 
+      - llvm 
+      - libncursesw5-dev 
+      - xz-utils 
+      - tk-dev 
+      - libxml2-dev 
+      - libxmlsec1-dev 
+      - libffi-dev 
+      - liblzma-dev
+    state: present  
+
+- name: Remove existing Pyenv directory if present
+  ansible.builtin.file:
+    path: /root/.pyenv
+    state: absent    
+
+- name: Download pyenv installation script
+  ansible.builtin.get_url:
+    url: "https://pyenv.run"
+    dest: "/root/pyenv_install.sh"
+    mode: "055"
+
+- name: Execute installation file 
+  ansible.builtin.shell: /root/pyenv_install.sh
+
+- name: Setup environment files 
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_home }}/.bashrc"
+    line: |
+      export PYENV_ROOT="$HOME/.pyenv"
+      export PATH="$PYENV_ROOT/bin:$PATH"
+      eval "$(pyenv init --path)"
+      eval "$(pyenv init -)" 
+  
+- name: Execute "$SHELL" command
+  ansible.builtin.shell:
+    cmd: "exec \"$SHELL\""
+
+- name: install global python version
+  args:
+    executable: /bin/bash
+  ansible.builtin.shell:
+    cmd: "pyenv install {{ local_version }}"
+    creates: "{{ ansible_env.HOME }}/.pyenv/versions:3.7.2"
+  vars:
+    ansible_aws_ssm_timeout: 3000
+  environment:
+    PATH: "{{ ansible_env.HOME }}/.pyenv/bin:{{ ansible_env.PATH }}"
+
+- name: Copy a project to private EC2
+  ansible.builtin.copy:
+    src: "/home/sujata/simple-django-project"
+    dest: "/home/ubuntu/app"
+    
+- name: Set local pyenv
+  args:
+    executable: /bin/bash
+    chdir: "/home/ubuntu/app"
+  ansible.builtin.shell: 
+    cmd: "pyenv local {{ local_version }}"
+  environment:
+    PATH: "{{ ansible_env.HOME }}/.pyenv/bin:{{ ansible_env.PATH }}"  
+
+- name: Install specified requiremnets for project
+  ansible.builtin.pip:
+    requirements: /home/ubuntu/app/app/requirements.txt
+
+
