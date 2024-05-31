@@ -1,9 +1,9 @@
 - name: Update apt cache
-  apt:
-    update_cache: yes
+  ansible.builtin.apt:
+    update_cache: true
 
 - name: Install MySQL
-  apt:
+  ansible.builtin.apt:
     name: mysql-server
     state: present
 
@@ -13,12 +13,18 @@
     state: started
     enabled: true
 
-- name: Create database user with name 'suj' and password with all database privileges
+- name: Create Database
+  mysql_db:
+    name: mydatabase
+    state: present 
+
+- name: Create database user with name 'sujata' and password with all database privileges
   community.mysql.mysql_user:
-    name: suj
+    name: sujata
     password: password
     priv: '*.*:ALL'
     state: present
+
 
 
 

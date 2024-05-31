@@ -2,14 +2,11 @@
   ansible.builtin.apt:
     update_cache: yes
 
-- name: Upgrade all packages
-  ansible.builtin.apt:
-    upgrade: yes
-
-
 - name: Install dependencies
   ansible.builtin.apt:
-    name:
+    name: "{{ items }}"
+    state: present 
+    loop:
       - libssl-dev 
       - zlib1g-dev 
       - libbz2-dev 
@@ -23,8 +20,7 @@
       - libxmlsec1-dev 
       - libffi-dev 
       - liblzma-dev
-    state: present  
-
+     
 - name: Remove existing Pyenv directory if present
   ansible.builtin.file:
     path: /root/.pyenv
@@ -37,7 +33,7 @@
     mode: "055"
 
 - name: Execute installation file 
-  ansible.builtin.shell: /root/pyenv_install.sh
+  ansible.builtin.command: /root/pyenv_install.sh
 
 - name: Setup environment files 
   ansible.builtin.lineinfile:
@@ -52,14 +48,12 @@
   ansible.builtin.shell:
     cmd: "exec \"$SHELL\""
 
-- name: install global python version
+- name: install python version
   args:
     executable: /bin/bash
   ansible.builtin.shell:
     cmd: "pyenv install {{ local_version }}"
     creates: "{{ ansible_env.HOME }}/.pyenv/versions:3.7.2"
-  vars:
-    ansible_aws_ssm_timeout: 3000
   environment:
     PATH: "{{ ansible_env.HOME }}/.pyenv/bin:{{ ansible_env.PATH }}"
 
@@ -77,8 +71,15 @@
   environment:
     PATH: "{{ ansible_env.HOME }}/.pyenv/bin:{{ ansible_env.PATH }}"  
 
-- name: Install specified requiremnets for project
+
+- name: Create Virtual environment
+  command:
+    cmd: python3 -m venv {{ project_path }}/project_venv
+    creates: "{{ project_path }}/project_venv"
+
+- name: Install specified requirements for project
   ansible.builtin.pip:
-    requirements: /home/ubuntu/app/app/requirements.txt
+    requirements: /home/ubuntu/app/requirements.txt
+    virtualenv: 
 
 

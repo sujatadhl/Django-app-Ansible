@@ -1,9 +1,7 @@
-- name: Install nginx
-  ansible.builtin.apt:
-    name: nginx
-    state: latest
-    update_cache: true  
-    
+- name: Remove default configuration file
+  ansible.builtin.file:
+    path: "{{ nginx_default_path }}"
+    state: absent
 
 - name: Copy configuration file 
   ansible.builtin.template:
