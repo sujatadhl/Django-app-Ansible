@@ -2,10 +2,15 @@
   ansible.builtin.apt:
     update_cache: true
 
-- name: Install MySQL
+- name: Install MySQL server and development headers
   ansible.builtin.apt:
-    name: mysql-server
+    name: "{{ item }}"
     state: present
+  loop:
+    - mysql-server
+    - libmysqlclient-dev
+    - python3-pip  # Ensure pip3 is available
+    - python3-venv  # Ensure python3-venv is available
 
 - name: Start MySQL service
   ansible.builtin.service:
@@ -13,18 +18,15 @@
     state: started
     enabled: true
 
-- name: Create Database
-  mysql_db:
-    name: mydatabase
-    state: present 
+# - name: Install Python MySQL module
+#   ansible.builtin.pip:
+#     name: mysqlclient
+#     state: present
+#     executable: pip3  # Ensure using pip3
 
-- name: Create database user with name 'sujata' and password with all database privileges
-  community.mysql.mysql_user:
-    name: sujata
-    password: password
-    priv: '*.*:ALL'
-    state: present
-
-
-
-
+# - name: Create database user with name 'sujata' and password with all database privileges
+#   ansible.builtin.mysql_user:
+#     name: sujata
+#     password: password
+#     priv: '*.*:ALL'
+#     state: present

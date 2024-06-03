@@ -4,22 +4,23 @@
 
 - name: Install dependencies
   ansible.builtin.apt:
-    name: "{{ items }}"
+    name: "{{ item }}"
     state: present 
-    loop:
-      - libssl-dev 
-      - zlib1g-dev 
-      - libbz2-dev 
-      - libreadline-dev 
-      - libsqlite3-dev 
-      - llvm 
-      - libncursesw5-dev 
-      - xz-utils 
-      - tk-dev 
-      - libxml2-dev 
-      - libxmlsec1-dev 
-      - libffi-dev 
-      - liblzma-dev
+  loop:
+    - libssl-dev 
+    - zlib1g-dev 
+    - libbz2-dev 
+    - libreadline-dev 
+    - libsqlite3-dev 
+    - llvm 
+    - libncursesw5-dev 
+    - xz-utils 
+    - tk-dev 
+    - libxml2-dev 
+    - libxmlsec1-dev 
+    - libffi-dev 
+    - liblzma-dev
+    - virtualenv
      
 - name: Remove existing Pyenv directory if present
   ansible.builtin.file:
@@ -33,7 +34,8 @@
     mode: "055"
 
 - name: Execute installation file 
-  ansible.builtin.command: /root/pyenv_install.sh
+  ansible.builtin.command: 
+    cmd: /root/pyenv_install.sh
 
 - name: Setup environment files 
   ansible.builtin.lineinfile:
@@ -51,35 +53,14 @@
 - name: install python version
   args:
     executable: /bin/bash
-  ansible.builtin.shell:
-    cmd: "pyenv install {{ local_version }}"
-    creates: "{{ ansible_env.HOME }}/.pyenv/versions:3.7.2"
-  environment:
-    PATH: "{{ ansible_env.HOME }}/.pyenv/bin:{{ ansible_env.PATH }}"
-
-- name: Copy a project to private EC2
-  ansible.builtin.copy:
-    src: "/home/sujata/simple-django-project"
-    dest: "/home/ubuntu/app"
-    
-- name: Set local pyenv
-  args:
-    executable: /bin/bash
-    chdir: "/home/ubuntu/app"
-  ansible.builtin.shell: 
-    cmd: "pyenv local {{ local_version }}"
+  ansible.builtin.command:
+    cmd: "pyenv install {{ python_version }}"
+    creates: "{{ ansible_env.HOME }}/.pyenv/versions:3.7"
   environment:
     PATH: "{{ ansible_env.HOME }}/.pyenv/bin:{{ ansible_env.PATH }}"  
 
-
-- name: Create Virtual environment
-  command:
-    cmd: python3 -m venv {{ project_path }}/project_venv
-    creates: "{{ project_path }}/project_venv"
-
-- name: Install specified requirements for project
-  ansible.builtin.pip:
-    requirements: /home/ubuntu/app/requirements.txt
-    virtualenv: 
-
-
+- name: install the package, force upgrade
+  pip:
+    name: pip
+    executable: pip3
+    state: latest

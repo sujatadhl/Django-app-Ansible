@@ -1,3 +1,4 @@
 ansible_home: /root
-local_version: 3.7.2
+python_version: 3.7
+
 
