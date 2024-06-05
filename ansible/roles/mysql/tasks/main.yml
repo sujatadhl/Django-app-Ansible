@@ -10,23 +10,9 @@
     - mysql-server
     - libmysqlclient-dev
     - python3-pip  # Ensure pip3 is available
-    - python3-venv  # Ensure python3-venv is available
 
 - name: Start MySQL service
   ansible.builtin.service:
     name: mysql
     state: started
     enabled: true
-
-# - name: Install Python MySQL module
-#   ansible.builtin.pip:
-#     name: mysqlclient
-#     state: present
-#     executable: pip3  # Ensure using pip3
-
-# - name: Create database user with name 'sujata' and password with all database privileges
-#   ansible.builtin.mysql_user:
-#     name: sujata
-#     password: password
-#     priv: '*.*:ALL'
-#     state: present
